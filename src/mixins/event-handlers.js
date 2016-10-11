@@ -16,16 +16,18 @@ var EventHandlers = {
     if (options.message === 'previous') {
       slideOffset = (indexOffset === 0) ? slidesToScroll : slidesToShow - indexOffset;
       targetSlide = currentSlide - slideOffset;
-      if (this.props.lazyLoad) {
-        previousInt = currentSlide - slideOffset;
-        targetSlide = previousInt === -1 ? slideCount -1 : previousInt;
-      }
+      // this was breaking when going from the first slide to the last
+      //if (this.props.lazyLoad) {
+      //  previousInt = currentSlide - slideOffset;
+      //  targetSlide = previousInt === -1 ? slideCount -1 : previousInt;
+      //}
     } else if (options.message === 'next') {
       slideOffset = (indexOffset === 0) ? slidesToScroll : indexOffset;
       targetSlide = currentSlide + slideOffset;
-      if (this.props.lazyLoad) {
-        targetSlide = ((currentSlide + slidesToScroll) % slideCount) + indexOffset;
-      }
+      // this was breaking when going from the last slide to the first
+      //if (this.props.lazyLoad) {
+      //  targetSlide = ((currentSlide + slidesToScroll) % slideCount) + indexOffset;
+      //}
     } else if (options.message === 'dots' || options.message === 'children') {
       // Click on dots
       targetSlide = options.index * options.slidesToScroll;
@@ -41,7 +43,7 @@ var EventHandlers = {
 
     this.slideHandler(targetSlide);
   },
- 
+
   // Accessiblity handler for previous and next
   keyHandler: function (e) {
     //Dont slide if the cursor is inside the form fields and arrow keys are pressed

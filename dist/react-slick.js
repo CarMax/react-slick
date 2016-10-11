@@ -275,18 +275,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (i >= this.state.currentSlide && i < this.state.currentSlide + this.props.slidesToShow) {
 	        lazyLoadedList.push(i);
 
-	        // peek mode - next slide
-	        if (this.props.peek) {
-	          lazyLoadedList.push(i + 1);
-	        }
+	        // preload one slide forward
+	        lazyLoadedList.push(i + 1);
 	      }
 	    }
 
-	    // peek mode - previous slide
-	    if (this.props.peek) {
-	      var previous = this.props.initialSlide === 0 ? this.props.children.length - 1 : this.props.initialSlide - 1;
-	      lazyLoadedList.push(previous);
-	    }
+	    // preload one previous slide
+	    var previous = this.props.initialSlide === 0 ? this.props.children.length - 1 : this.props.initialSlide - 1;
+	    lazyLoadedList.push(previous);
 
 	    if (this.props.lazyLoad && this.state.lazyLoadedList.length === 0) {
 	      this.setState({
@@ -523,16 +519,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (options.message === 'previous') {
 	      slideOffset = indexOffset === 0 ? slidesToScroll : slidesToShow - indexOffset;
 	      targetSlide = currentSlide - slideOffset;
-	      if (this.props.lazyLoad) {
-	        previousInt = currentSlide - slideOffset;
-	        targetSlide = previousInt === -1 ? slideCount - 1 : previousInt;
-	      }
+	      // this was breaking when going from the first slide to the last
+	      //if (this.props.lazyLoad) {
+	      //  previousInt = currentSlide - slideOffset;
+	      //  targetSlide = previousInt === -1 ? slideCount -1 : previousInt;
+	      //}
 	    } else if (options.message === 'next') {
 	      slideOffset = indexOffset === 0 ? slidesToScroll : indexOffset;
 	      targetSlide = currentSlide + slideOffset;
-	      if (this.props.lazyLoad) {
-	        targetSlide = (currentSlide + slidesToScroll) % slideCount + indexOffset;
-	      }
+	      // this was breaking when going from the last slide to the first
+	      //if (this.props.lazyLoad) {
+	      //  targetSlide = ((currentSlide + slidesToScroll) % slideCount) + indexOffset;
+	      //}
 	    } else if (options.message === 'dots' || options.message === 'children') {
 	      // Click on dots
 	      targetSlide = options.index * options.slidesToScroll;
@@ -1305,24 +1303,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var slidesToLoad = [];
 	      for (var i = targetSlide; i < targetSlide + this.props.slidesToShow; i++) {
 	        loaded = loaded && this.state.lazyLoadedList.indexOf(i) >= 0;
-	        // if (!loaded) {
-	        slidesToLoad.push(i);
-	        if (this.props.peek) {
-	          if (targetSlide === this.state.slideCount - 1) {
-	            // backwards from start
-	            slidesToLoad.push(this.state.slideCount - 2);
-	          } else {
-	            // any other swipe
-	            slidesToLoad.push(targetSlide > this.state.currentSlide ? i + 1 : i - 1);
+	        if (!loaded || this.props.peek) {
+	          slidesToLoad.push(i);
+	          if (this.props.peek) {
+	            if (targetSlide === -1) {
+	              // backwards from start
+	              slidesToLoad.push(this.state.slideCount - 2);
+	            } else {
+	              // any other swipe
+	              slidesToLoad.push(targetSlide > this.state.currentSlide ? i + 1 : i - 1);
+	            }
 	          }
 	        }
-	        // }
 	      }
-	      // if (!loaded) {
-	      this.setState({
-	        lazyLoadedList: this.state.lazyLoadedList.concat(slidesToLoad)
-	      });
-	      // }
+	      if (!loaded || this.props.peek) {
+	        this.setState({
+	          lazyLoadedList: this.state.lazyLoadedList.concat(slidesToLoad)
+	        });
+	      }
 	    }
 
 	    // Slide Transition happens here.
